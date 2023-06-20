@@ -4,6 +4,8 @@ import pokeTP_utils as utils
 
 ##
 
+DEBUG_MODE = True
+
 class Encounter:
     def __init__ (self, method, condition_list, pokemon):
         self.method = method
@@ -75,12 +77,12 @@ def selectLocationArea (location_query):
             break
 
     if (not len(locations_list)):
-        print(f"Error: couldn't obtain the locations list\nAborting...")
+        utils.debugPrint(f"Error: couldn't obtain the locations list\nAborting...", DEBUG_MODE)
         sys.exit()
 
     if (len(locations_list) == 1):
         # 35 truncates just the location id from the url
-        print(f"Location selected:", locations_list[0]['name'], f"({locations_list[0]['url'][35:-1]})")
+        utils.debugPrint(f"Location selected: {locations_list[0]['name']} {locations_list[0]['url'][35:-1]}", DEBUG_MODE)
         return locations_list[0]['url']
 
     # If the list has more than one element, the search was not conclusive
@@ -99,7 +101,7 @@ def selectLocationArea (location_query):
             break
         print(f"Error: your input is outside the allowed selection, please input a number in the following interval: 0 - {list_iterator}\n")
 
-    print(f"Location selected:", locations_list[selected_location-1]['name'], f"({locations_list[selected_location-1]['url'][35:-1]})")
+    utils.debugPrint(f"Location selected: {locations_list[selected_location-1]['name']} {locations_list[selected_location-1]['url'][35:-1]}", DEBUG_MODE)
     return locations_list[selected_location-1]['url']
 
 
@@ -177,6 +179,35 @@ def generateGameEncounterList (location_area_encounters, game_version):
 
 ##
 
+def encountersLocation (game_version, location_area_url, debug_flag = True):
+    # Set debug mode
+    global DEBUG_MODE
+    DEBUG_MODE = debug_flag
+    utils.toggleDebugMode(debug_flag)
+
+    # Search pokeAPI's location-areas belonging to the selected location
+    location_areas_list = utils.getLocationAreasFromLocation(location_area_url)
+
+    # List encounters for each location-area in the location_areas_list
+    for location_area in location_areas_list:
+        # Parse location-area information from pokeAPI into a data frame
+        queried_location_area = utils.queryPokeAPI(f'https://pokeapi.co/api/v2/location-area/{location_area}/')
+        location_area_encounters = queried_location_area['pokemon_encounters']
+
+        # Generate encounter_list of a given location in a given game
+        encounter_list = generateGameEncounterList(location_area_encounters, game_version)
+
+        # Display error message if encounter_list is empty
+        if (not len(encounter_list)):
+            utils.debugPrint(f"There are no encounters in {location_area} for {game_version}", DEBUG_MODE)
+            continue
+
+        # Sorting the encounter list by rate
+        encounter_list = sorted(encounter_list, key=Encounter.getRate, reverse=True)
+
+    return encounter_list
+
+
 def main (argv, argc):
     if (argc != 3):
         print(f"Invadid arguments: syntax is {{game_version_name}} {{location_area_query}}")
@@ -195,31 +226,14 @@ def main (argv, argc):
     # Search pokeAPI's location and select the one corresponding to location_query
     location_area_url = selectLocationArea(location_query)
 
-    # Search pokeAPI's location-areas belonging to the selected location
-    location_areas_list = utils.getLocationAreasFromLocation(location_area_url)
+    encounter_list = encountersLocation(game_version, location_area_url)
 
-    # List encounters for each location-area in the location_areas_list
-    for location_area in location_areas_list:
-        # Parse location-area information from pokeAPI into a data frame
-        queried_location_area = utils.queryPokeAPI(f'https://pokeapi.co/api/v2/location-area/{location_area}/')
-        location_area_encounters = queried_location_area['pokemon_encounters']
+    # Printing the results
+    utils.printFramedTitle(f"Encounters in {location_area}", new_lines=1)
+    encounter_method_list = generateMethodEncounterList()
+    for encounter_method in encounter_method_list:
+        printEncounterListTable(encounter_method, encounter_list)
 
-        # Generate encounter_list of a given location in a given game
-        encounter_list = generateGameEncounterList(location_area_encounters, game_version)
-
-        # Display error message if encounter_list is empty
-        if (not len(encounter_list)):
-            print(f"There are no encounters in {location_area} for", game_version)
-            continue
-
-        # Sorting the encounter list by rate
-        encounter_list = sorted(encounter_list, key=Encounter.getRate, reverse=True)
-
-        # Printing the results
-        utils.printFramedTitle(f"Encounters in {location_area}", new_lines=1)
-        encounter_method_list = generateMethodEncounterList()
-        for encounter_method in encounter_method_list:
-            printEncounterListTable(encounter_method, encounter_list)
     return
 
 ##

@@ -6,6 +6,20 @@ from tabulate import tabulate
 
 ##
 
+DEBUG_MODE = True
+
+def toggleDebugMode (debug_flag):
+    global DEBUG_MODE
+    DEBUG_MODE = debug_flag
+    return
+
+
+def debugPrint (message, debug = True):
+    if (debug):
+        print(message)
+    return
+
+
 def queryPokeAPI (url, cache = True, checkCache = True):
     # Cached directory
     api_directory = url[26:-1]   # 26 truncates 'https://pokeapi.co/api/v2/'
@@ -20,7 +34,7 @@ def queryPokeAPI (url, cache = True, checkCache = True):
 
     response = requests.get(url)
     if response.status_code != 200:
-        print('Error:', response.status_code)
+        debugPrint(f"Error: {response.status_code}", DEBUG_MODE)
         sys.exit()
 
     # Convert response into json
@@ -69,7 +83,7 @@ def selectPokemonSpecies (pokemon_query):
             break
         print(f"Error: your input is outside the allowed selection, please input a number in the following interval: 0 - {list_iterator}\n")
 
-    print(f"Selected pokémon:", variant_list[selected_variant-1])
+    debugPrint(f"Selected pokémon: {variant_list[selected_variant-1]}", DEBUG_MODE)
     return variant_list[selected_variant-1]
 
 
@@ -94,11 +108,11 @@ def selectGameName (game_query):
             break
 
     if (not len(games_list)):
-        print(f"Error: couldn't find a game that matches the argument:", game_query, f"\nAborting...")
+        debugPrint(f"Error: couldn't find a game that matches the argument: {game_query}\nAborting...", DEBUG_MODE)
         sys.exit()
 
     if (len(games_list) == 1):
-        print(f"Game selected:", games_list[0])
+        debugPrint(f"Game selected: {games_list[0]}", DEBUG_MODE)
         return games_list[0]
 
     # If the list has more than one element, the search was not conclusive
@@ -117,7 +131,7 @@ def selectGameName (game_query):
             break
         print(f"Error: your input is outside the allowed selection, please input a number in the following interval: 0 - {list_iterator}\n")
 
-    print(f"Game selected:", games_list[selected_game-1])
+    debugPrint(f"Game selected: {games_list[selected_game-1]}", DEBUG_MODE)
     return games_list[selected_game-1]
 
 
@@ -127,7 +141,7 @@ def getLocationAreasFromLocation (location_url):
     location_query = queryPokeAPI(location_url)
 
     for location_area in location_query['areas']:
-        print(f"\t{location_areas_iterator}) {location_area['name']}")
+        debugPrint(f"\t{location_areas_iterator}) {location_area['name']}", DEBUG_MODE)
         location_areas_list.append(location_area['name'])
         location_areas_iterator += 1
 
@@ -140,7 +154,7 @@ def checkEncountersInLocationArea (game_version, location_area_name):
     for encounter in location_area_query['pokemon_encounters']:
         for encounter_version in encounter['version_details']:
             if (encounter_version['version']['name'] == game_version):
-                print(f'\t\tEncounter detected in {location_area_name}')
+                debugPrint(f'\t\tEncounter detected in {location_area_name}', DEBUG_MODE)
                 return True
     
     return False
