@@ -185,6 +185,8 @@ def encountersLocation (game_version, location_area_url, debug_flag = True):
     DEBUG_MODE = debug_flag
     utils.toggleDebugMode(debug_flag)
 
+    full_encounter_list = []
+
     # Search pokeAPI's location-areas belonging to the selected location
     location_areas_list = utils.getLocationAreasFromLocation(location_area_url)
 
@@ -205,7 +207,15 @@ def encountersLocation (game_version, location_area_url, debug_flag = True):
         # Sorting the encounter list by rate
         encounter_list = sorted(encounter_list, key=Encounter.getRate, reverse=True)
 
-    return encounter_list
+        # Add location_area info to the encounter_list
+        encounter_dict = {
+            'location_area': location_area,
+            'encounter_list': encounter_list
+        }
+
+        full_encounter_list.append(encounter_dict)
+
+    return full_encounter_list
 
 
 def main (argv, argc):
@@ -226,13 +236,15 @@ def main (argv, argc):
     # Search pokeAPI's location and select the one corresponding to location_query
     location_area = selectLocationArea(location_query)
 
-    encounter_list = encountersLocation(game_version, location_area['url'])
+    full_encounter_list = encountersLocation(game_version, location_area['url'])
 
     # Printing the results
-    utils.printFramedTitle(f"Encounters in {location_area['name']}", new_lines=1)
-    encounter_method_list = generateMethodEncounterList()
-    for encounter_method in encounter_method_list:
-        printEncounterListTable(encounter_method, encounter_list)
+    utils.printFramedTitle(f".: Encounters in {location_area['name']} :.", new_lines=1)
+    for encounter_dict in full_encounter_list:
+        encounter_method_list = generateMethodEncounterList()
+        utils.printFramedTitle(encounter_dict['location_area'], new_lines=1)
+        for encounter_method in encounter_method_list:
+            printEncounterListTable(encounter_method, encounter_dict['encounter_list'])
 
     return
 
