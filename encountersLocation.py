@@ -82,8 +82,8 @@ def selectLocationArea (location_query):
 
     if (len(locations_list) == 1):
         # 35 truncates just the location id from the url
-        utils.debugPrint(f"Location selected: {locations_list[0]['name']} {locations_list[0]['url'][35:-1]}", DEBUG_MODE)
-        return locations_list[0]['url']
+        utils.debugPrint(f"Location selected: {locations_list[0]['name']} ({locations_list[0]['url'][35:-1]})", DEBUG_MODE)
+        return locations_list[0]
 
     # If the list has more than one element, the search was not conclusive
     # A list of the matches should be displayed so the user can manually pick a location
@@ -102,7 +102,7 @@ def selectLocationArea (location_query):
         print(f"Error: your input is outside the allowed selection, please input a number in the following interval: 0 - {list_iterator}\n")
 
     utils.debugPrint(f"Location selected: {locations_list[selected_location-1]['name']} {locations_list[selected_location-1]['url'][35:-1]}", DEBUG_MODE)
-    return locations_list[selected_location-1]['url']
+    return locations_list[selected_location-1]
 
 
 def generateMethodEncounterList ():
@@ -224,12 +224,12 @@ def main (argv, argc):
     game_version = utils.selectGameName(game_version)
 
     # Search pokeAPI's location and select the one corresponding to location_query
-    location_area_url = selectLocationArea(location_query)
+    location_area = selectLocationArea(location_query)
 
-    encounter_list = encountersLocation(game_version, location_area_url)
+    encounter_list = encountersLocation(game_version, location_area['url'])
 
     # Printing the results
-    utils.printFramedTitle(f"Encounters in {location_area}", new_lines=1)
+    utils.printFramedTitle(f"Encounters in {location_area['name']}", new_lines=1)
     encounter_method_list = generateMethodEncounterList()
     for encounter_method in encounter_method_list:
         printEncounterListTable(encounter_method, encounter_list)
