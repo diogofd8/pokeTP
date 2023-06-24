@@ -16,7 +16,9 @@ For now a bunch of useful Python scripts that query [pokeAPI](https://pokeapi.co
 - WebApp - (work in progress)
 
 ## Usage
-#### encountersLocation
-#### pokemonLearnMoveSet
-#### pokemonStats
-#### gameMetLocations
+Simply execute the `menuPokeTP` script in your terminal console:
+```
+python3 menuPokeTP.py
+```
+
+Additionally, you can execute each script directly, providing the required arguments separated by spaces. Executing the script without any argument (or invalid arguments) will return an error message indicating the instructions.
