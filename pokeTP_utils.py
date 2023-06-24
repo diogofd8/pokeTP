@@ -168,10 +168,27 @@ def printTableHead (content, table_width):
 def getTerminalWidth (discounted_chars = 2):
     return os.get_terminal_size().columns - discounted_chars
 
-def printFramedTitle (content, new_lines = 1):
+def printFramedTitle (content, new_lines = 1, title_width_per = 100, centered = False):
+    # Title with frame cannot exceed 100% of the terminal width
+    MAX_TITLE_WITDH = 100
+    if (title_width_per > MAX_TITLE_WITDH):
+        title_width_per = MAX_TITLE_WITDH
+
+    # Default padding
+    padding = 0
+
+    # New empty lines for spacing
     for i in range(new_lines):
-        print() # New empty line for spacing
-    frame_width = getTerminalWidth()
-    print(f'+', f'='*frame_width, f'+', sep='')
-    print(f'|', f'{content:^{frame_width}}', f'|', sep='')
-    print(f'+', f'='*frame_width, f'+', sep='')
+        print()
+
+    # Calculate the frame width
+    frame_width = getTerminalWidth()*title_width_per/100
+    frame_width = int(frame_width)
+
+    # If the title width is smaller than 100%, pad the frame so it looks centered
+    if (centered == True and title_width_per < MAX_TITLE_WITDH):
+        padding = int((MAX_TITLE_WITDH-title_width_per)/2)
+
+    print(f'{" "}'*padding + f'+', f'='*frame_width, f'+', sep='')
+    print(f'{" "}'*padding + f'|', f'{content:^{frame_width}}', f'|', sep='')
+    print(f'{" "}'*padding + f'+', f'='*frame_width, f'+', sep='')
